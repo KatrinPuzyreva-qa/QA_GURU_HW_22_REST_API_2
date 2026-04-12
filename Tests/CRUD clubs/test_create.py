@@ -9,6 +9,7 @@ PASSWORD = "katrin1"
 TOKEN_PATH = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 USERNAME_ID = 1772
 
+
 def test_success_create_club():
     auth_body = {"username": USERNAME, "password": PASSWORD}
     auth_response = requests.post(API_URL + "/auth/token/", json=auth_body)
@@ -17,35 +18,36 @@ def test_success_create_club():
     book_title = f"Some another book {random.randint(1000, 999999)}"
     book_author = f"Some author"
     club_body = {
-      "bookTitle": book_title,
-      "bookAuthors": book_author,
-      "publicationYear": 2147483647,
-      "description": "Some descr",
-      "telegramChatLink": "https://t.me/qa.guru"
+        "bookTitle": book_title,
+        "bookAuthors": book_author,
+        "publicationYear": 2147483647,
+        "description": "Some descr",
+        "telegramChatLink": "https://t.me/qa.guru"
     }
+
+    # Создание клуба
     club_headers = {"Authorization": "Bearer " + access_token}
     club_response = requests.post(API_URL + "/clubs/", headers=club_headers, json=club_body)
 
     print("\nStatus code:", club_response.status_code)
-    print("Headers:", club_response.headers)
     print("Body:", club_response.text)
 
-    assert club_response.status_code == 201
+    assert club_response.status_code == 201, f"Ожидался статус 201, получен {club_response.status_code}"
 
     club_response_body = club_response.json()
-    validate(club_response_body, schema=success_create_club)
+    validate(instance=club_response_body, schema=success_create_club)
 
+    # 5. Проверка значений в ответе (Проверка "other fields")
     assert club_response_body["bookTitle"] == book_title
     assert club_response_body["bookAuthors"] == book_author
-    # todo other fields
-    assert club_response_body["owner"] == USERNAME_ID
-    assert USERNAME_ID in club_response_body["members"]
-    assert len(club_response_body["reviews"]) == 0
-    assert club_response_body["modified"] is None
 
-    club_id = club_response_body["id"]
-    delete_response = requests.delete(API_URL + f"/clubs/{club_id}/", headers=club_headers)
-    assert delete_response.status_code is 204
+    # Проверка полей, которые формирует сервер (а не передает клиент)
+    assert club_response_body["owner"] == USERNAME_ID, "Владелец клуба указан неверно"
+    assert USERNAME_ID in club_response_body["members"], "Пользователь не добавлен в members"
+
+    # Проверка полей, которые должны быть инициализированы пустыми/нулевыми
+    assert len(club_response_body["reviews"]) == 0, "Список отзывов должен быть пустым"
+    assert club_response_body["modified"] is None, "Поле 'modified' должно быть None при создании"
 
 
 def test_create_club_unauthorized():
@@ -112,3 +114,4 @@ def test_create_club_with_invalid_data():
     # так как он его не валидирует.
     assert "publicationYear" not in body, \
         "Сервер не должен был проверять поле publicationYear, но вернул ошибку."
+

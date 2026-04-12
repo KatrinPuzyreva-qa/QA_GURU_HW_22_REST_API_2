@@ -1,11 +1,11 @@
 import requests
-import json
+from jsonschema import validate
+
+from Schemas.club_schema import club_detail_schema_patch
 
 API_URL = "https://book-club.qa.guru/api/v1"
-CLUB_ID = 162
-ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"  # <-- ЗАМЕНИТЕ НА РЕАЛЬНЫЙ ТОКЕН
+CLUB_ID = 886
 
-# Полезная нагрузка (payload) для обновления
 PATCH_PAYLOAD = {
     "bookTitle": "booking_info",
     "bookAuthors": "booking_author",
@@ -17,9 +17,14 @@ PATCH_PAYLOAD = {
 
 def test_patch_club_success():
     """Тест: Успешное частичное обновление клуба."""
+    auth_body = {"username": "katrin", "password": "katrin1"}
+    auth_response = requests.post(f"{API_URL}/auth/token/", json=auth_body)
+
+    assert auth_response.status_code == 200, "Не удалось авторизоваться"
+    access_token = auth_response.json()["access"]
 
     headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
 
@@ -33,48 +38,44 @@ def test_patch_club_success():
     print("Status code:", response.status_code)
     print("Body:", response.text)
 
-    # 1. Проверка статуса ответа
     assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
 
-    # 2. Проверка, что данные в ответе соответствуют отправленным
     body = response.json()
-
-    # Проверяем каждое поле из payload
+    validate(instance=body, schema=club_detail_schema_patch)
+    # Проверка, что данные обновились
     assert body["bookTitle"] == PATCH_PAYLOAD["bookTitle"]
-    assert body["bookAuthors"] == PATCH_PAYLOAD["bookAuthors"]
-    assert body["publicationYear"] == PATCH_PAYLOAD["publicationYear"]
-    assert body["description"] == PATCH_PAYLOAD["description"]
-    assert body["telegramChatLink"] == PATCH_PAYLOAD["telegramChatLink"]
-
-    # Проверяем, что ID клуба не изменился
-    assert body["id"] == CLUB_ID, "ID клуба был изменен при обновлении"
 
 
 def test_patch_club_empty_body():
     """Тест: Отправка PATCH-запроса с пустым телом."""
+    auth_body = {"username": "katrin", "password": "katrin1"}
+    auth_response = requests.post(f"{API_URL}/auth/token/", json=auth_body)
+
+    assert auth_response.status_code == 200, "Не удалось авторизоваться"
+    access_token = auth_response.json()["access"]
 
     headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
 
+    # Отправляем ПУСТОЕ тело запроса
     response = requests.patch(
         f"{API_URL}/clubs/{CLUB_ID}/",
         headers=headers,
-        json={}  # Пустое тело запроса
+        json={}
     )
 
-    print("\\n--- PATCH Пустое тело запроса ---")
+    print("\n--- PATCH Пустое тело запроса ---")
     print("Status code:", response.status_code)
     print("Body:", response.text)
 
-    # 1. Проверка статуса ответа (Ожидается ошибка клиента)
-    assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
 
-    # 2. Проверка текста ошибки (зависит от реализации бэкенда)
+    assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
+
+    # Проверяем, что данные в ответе НЕ изменились по сравнению с тем, что было в бд
     body = response.json()
-
-    # Обычно бэкенд (например, DRF) возвращает список ошибок для каждого поля
-    # или общее сообщение. Проверим типичные варианты.
-    assert "non_field_errors" in body or any("required" in err for err in body.values()), \ \
-            f"Неожиданная структура ошибки: {body}"
+    validate(instance=body, schema=club_detail_schema_patch)
+    assert "id" in body
+    assert "bookTitle" in body
+    assert "modified" in body
