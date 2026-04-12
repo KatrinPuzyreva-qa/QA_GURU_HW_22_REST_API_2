@@ -1,20 +1,16 @@
 import requests
 from jsonschema import validate
+from Schemas.auth_schema import success_auth, wrong_credentials_auth, unsupported_media_type, \
+    error_password_required_schema_auth, error_username_required_schema_auth, error_username_and_password_required
+from Tests.Auth.conftest import wrong_body_type_data, USERNAME, PASSWORD, API_URL, TOKEN_PATH, valid_credentials
 
-from schemas.auth_schema import success_auth, wrong_credentials_auth, unsupported_media_type
 
-API_URL = "https://book-club.qa.guru/api/v1/auth/token/"
-USERNAME = "user24"
-PASSWORD = "pass24"
-TOKEN_PATH = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBl"
+def test_successful_auth(valid_credentials):
+    """Тест успешной авторизации."""
+    response = requests.post(API_URL, json=valid_credentials)
 
-def test_successful_auth():
-    request_body = {"username": USERNAME, "password": PASSWORD}
-
-    response = requests.post(API_URL, json=request_body)
-
-    print("\nStatus code:", response.status_code)
-    print("Headers:", response.headers)
+    print("\n--- УСПЕШНАЯ Авторизация ---")
+    print("Status code:", response.status_code)
     print("Body:", response.text)
 
     assert response.status_code == 200
@@ -24,19 +20,21 @@ def test_successful_auth():
 
     access_token = body["access"]
     refresh_token = body["refresh"]
+
+    # Проверки токенов
     assert TOKEN_PATH in access_token
     assert TOKEN_PATH in refresh_token
-    assert len(access_token.split(".")) == 3
-    assert len(refresh_token.split(".")) == 3
-    assert access_token != refresh_token
+    assert len(access_token.split(".")) == 3, "Токен должен состоять из 3 частей, разделенных точкой"
+    assert len(refresh_token.split(".")) == 3, "Токен должен состоять из 3 частей, разделенных точкой"
+    assert access_token != refresh_token, "Access и Refresh токены не должны совпадать"
 
-def test_wrong_credentials_auth():
-    request_body = {"username": USERNAME, "password": "wrong"}
 
-    response = requests.post(API_URL, json=request_body)
+def test_wrong_credentials_auth(wrong_password_data):
+    """Тест авторизации с неверным паролем."""
+    response = requests.post(API_URL, json=wrong_password_data)
 
-    print("\nStatus code:", response.status_code)
-    print("Headers:", response.headers)
+    print("\n--- Авторизация с неверным паролем ---")
+    print("Status code:", response.status_code)
     print("Body:", response.text)
 
     assert response.status_code == 401
@@ -46,33 +44,28 @@ def test_wrong_credentials_auth():
 
     assert body["detail"] == "Invalid username or password."
 
-def test_missing_password_auth():
-    request_body = {"username": USERNAME}
+def test_missing_password_auth(missing_password_data):
+    """Тест авторизации с отсутствующим паролем."""
+    response = requests.post(API_URL, json=missing_password_data)
 
-    response = requests.post(API_URL, json=request_body)
-
-    print("\nStatus code:", response.status_code)
-    print("Headers:", response.headers)
+    print("\n--- Авторизация без пароля ---")
+    print("Status code:", response.status_code)
     print("Body:", response.text)
 
-    # todo fix test
-    assert response.status_code == 401
+    assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
 
     body = response.json()
-    validate(body, schema=wrong_credentials_auth)
+    validate(instance=body, schema=error_password_required_schema_auth)
 
-    assert body["detail"] == "Invalid username or password."
+    expected_error = "This field is required."
+    assert expected_error in body["password"], f"Ожидалась ошибка '{expected_error}', получена: {body['password']}"
 
-# todo implement more test - missing username, missing username&password, wrong body type (None, True, 123, "text", [])
 
-def test_wrong_content_type_auth():
-    request_body = {"username": USERNAME, "password": PASSWORD}
-    headers = {"content-type": "image/png"}
-
-    response = requests.post(API_URL, headers=headers, json=request_body)
+def test_wrong_content_type_auth(valid_credentials, png_headers):
+    """Тест авторизации с неправильным заголовком Content-Type."""
+    response = requests.post(API_URL, headers=png_headers, json=valid_credentials)
 
     print("\nStatus code:", response.status_code)
-    print("Headers:", response.headers)
     print("Body:", response.text)
 
     assert response.status_code == 415
@@ -81,3 +74,68 @@ def test_wrong_content_type_auth():
     validate(body, schema=unsupported_media_type)
 
     assert body["detail"] == "Unsupported media type \"image/png\" in request."
+
+
+def test_missing_username_auth(missing_username_data):
+    """Тест авторизации с отсутствующим логином."""
+    response = requests.post(API_URL, json=missing_username_data)
+
+    print("\n--- Авторизация без логина ---")
+    print("Status code:", response.status_code)
+    print("Body:", response.text)
+
+    assert response.status_code == 400
+
+    body = response.json()
+    validate(instance=body, schema=error_username_required_schema_auth)
+
+    # Проверяем наличие ключа 'password' и текста ошибки внутри него
+    assert "username" in body, f"Ключ 'username' отсутствует в ответе: {body}"
+
+    expected_error = "This field is required."
+    assert expected_error in body["username"], f"Ожидалась ошибка '{expected_error}', получена: {body['username']}"
+
+
+def test_missing_username_and_password_auth(missing_both_data):
+    """Тест авторизации с отсутствующими логином и паролем."""
+    response = requests.post(API_URL, json=missing_both_data)
+
+    print("\n--- Авторизация без логина и пароля ---")
+    print("Status code:", response.status_code)
+    print("Body:", response.text)
+
+    assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
+
+    body = response.json()
+    validate(instance=body, schema=error_username_and_password_required)
+
+    # Проверяем наличие всех ключей в ответе об ошибке
+    assert "username" in body and "password" in body, \
+            f"Ожидались ключи 'username' и 'password'. Получено: {body.keys()}"
+
+    expected_error = "This field is required."
+
+    # Проверяем текст ошибки для username
+    assert expected_error in body["username"], \
+            f"Ожидалась ошибка '{expected_error}' для username, получена: {body['username']}"
+
+    # Проверяем текст ошибки для password
+    assert expected_error in body["password"], \
+            f"Ожидалась ошибка '{expected_error}' для password, получена: {body['password']}"
+
+
+def test_wrong_body_type(wrong_body_type_data):
+    #Тест авторизации с некорректным типом тела запроса.API корректно обрабатывает None, True, числа, строки и списки.
+    #Фикстура запустит тест 5 раз с разными значениями.
+
+    print(f"\n--- Авторизация с телом типа: {type(wrong_body_type_data).__name__} ---")
+    print("Отправляемое тело:", wrong_body_type_data)
+
+    response = requests.post(API_URL, json=wrong_body_type_data)
+
+    print("Status code:", response.status_code)
+    print("Body:", response.text)
+
+    # Проверяем, что сервер вернул ошибку клиента (4xx), а не упал с ошибкой 500
+    assert response.status_code >= 400 and response.status_code < 500, \
+            f"Ожидался код ошибки клиента (4xx), получен {response.status_code}"
