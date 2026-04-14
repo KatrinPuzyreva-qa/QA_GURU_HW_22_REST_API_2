@@ -47,6 +47,7 @@ def test_wrong_credentials_auth(wrong_password_data):
 
     assert body["detail"] == "Invalid username or password."
 
+
 def test_missing_password_auth(missing_password_data):
     """Тест авторизации с отсутствующим паролем."""
     response = requests.post(API_URL + "/auth/token/", json=missing_password_data)
@@ -122,32 +123,32 @@ def test_missing_username_and_password_auth(missing_both_data):
 
     # Проверяем наличие всех ключей в ответе об ошибке
     assert "username" in body and "password" in body, \
-            f"Ожидались ключи 'username' и 'password'. Получено: {body.keys()}"
+        f"Ожидались ключи 'username' и 'password'. Получено: {body.keys()}"
 
     expected_error = "This field is required."
 
     # Проверяем текст ошибки для username
     assert expected_error in body["username"], \
-            f"Ожидалась ошибка '{expected_error}' для username, получена: {body['username']}"
+        f"Ожидалась ошибка '{expected_error}' для username, получена: {body['username']}"
 
     # Проверяем текст ошибки для password
     assert expected_error in body["password"], \
-            f"Ожидалась ошибка '{expected_error}' для password, получена: {body['password']}"
+        f"Ожидалась ошибка '{expected_error}' для password, получена: {body['password']}"
 
 
 def test_wrong_body_type(wrong_body_type_data):
-    #Тест авторизации с некорректным типом тела запроса.API корректно обрабатывает None, True, числа, строки и списки.
-    #Фикстура запустит тест 5 раз с разными значениями.
+    # Тест авторизации с некорректным типом тела запроса.API корректно обрабатывает None, True, числа, строки и списки.
+    # Фикстура запустит тест 5 раз с разными значениями.
 
     print(
         f"--- Авторизация с некорректным типом тела запроса ---\n"
         f"\nОтправляемое тело: {wrong_body_type_data}\n"
-        )
+    )
     response = requests.post(API_URL + "/auth/token/", json=wrong_body_type_data)
 
     print("Status code:", response.status_code)
     print("Body:", response.text)
 
     # Проверяем, что сервер вернул ошибку клиента (4xx), а не упал с ошибкой 500
-    assert response.status_code >= 400 and response.status_code < 500, \
-            f"Ожидался код ошибки клиента (4xx), получен {response.status_code}"
+    assert 400 <= response.status_code < 500, \
+        f"Ожидался код ошибки клиента (4xx), получен {response.status_code}"

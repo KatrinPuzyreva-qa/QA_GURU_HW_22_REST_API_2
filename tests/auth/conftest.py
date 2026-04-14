@@ -51,8 +51,3 @@ def png_headers():
     """Возвращает заголовки для запроса с типом image/png."""
     return {"content-type": "image/png"}
 
-@pytest.fixture(params=[None, True, 123, "just a text", []])
-def wrong_body_type_data(request):
-    return request.param
-
-#Эта фикстура позволит запустить тест 5 раз (по количеству элементов в `params`),

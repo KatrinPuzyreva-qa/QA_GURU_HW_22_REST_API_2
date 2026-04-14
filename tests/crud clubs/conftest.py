@@ -24,20 +24,6 @@ def valid_club_body():
         "telegramChatLink": "https://t.me/valid_link"
     }
 
-
-# 2. Фикстура для получения access_token
-@pytest.fixture
-def access_token():
-    """Фикстура для авторизации и получения Bearer токена."""
-    auth_body = {"username": "katrin", "password": "katrin1"}
-    auth_response = requests.post(f"{API_URL}/auth/token/", json=auth_body)
-
-    # Если авторизация не удалась, лучше упасть сразу, чем отдавать None
-    assert auth_response.status_code == 200, "Не удалось авторизоваться для теста"
-
-    return auth_response.json()["access"]
-
-
 # 3. Фикстура для заголовков (зависит от access_token)
 @pytest.fixture
 def auth_headers(access_token):
@@ -66,12 +52,6 @@ def valid_club_id():
     else:
         pytest.xfail("Список клубов пуст. Невозможно выполнить тест, требующий валидный ID клуба.")
 
-
-# 1. Фикстура для заголовков авторизации
-@pytest.fixture
-def auth_headers(access_token):
-    """Возвращает заголовки с Bearer Token."""
-    return {"Authorization": f"Bearer {access_token}"}
 
 
 # 2. Фикстура для создания и очистки клуба (с использованием yield)

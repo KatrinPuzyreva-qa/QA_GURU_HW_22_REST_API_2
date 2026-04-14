@@ -1,6 +1,5 @@
 import requests
 from jsonschema import validate
-
 from schemas.club_schema import club_detail_schema_patch
 from tests.auth.conftest import API_URL, CLUB_ID, PATCH_PAYLOAD
 

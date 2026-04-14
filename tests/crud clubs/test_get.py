@@ -19,7 +19,6 @@ def test_get_id():
     assert body['id'] == 886
 
 
-
 def test_get_single_club_by_dynamic_id(valid_club_id):
     url = f"{API_URL}/clubs/{valid_club_id}/"
     response = requests.get(url)

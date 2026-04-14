@@ -1,7 +1,6 @@
 import requests
-import random
 
-from tests.auth.conftest import USERNAME, PASSWORD, API_URL
+from tests.auth.conftest import API_URL
 
 
 def test_delete_club_success(club_for_deletion, auth_headers):

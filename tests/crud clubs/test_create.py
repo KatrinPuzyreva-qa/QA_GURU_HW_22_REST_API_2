@@ -88,4 +88,3 @@ def test_create_club_with_invalid_data(access_token):
     # так как он его не валидирует.
     assert "publicationYear" not in body, \
         "Сервер не должен был проверять поле publicationYear, но вернул ошибку."
-
