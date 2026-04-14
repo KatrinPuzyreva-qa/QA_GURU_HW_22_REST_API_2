@@ -1,7 +1,7 @@
 import requests
 from jsonschema import validate
 
-from Schemas.club_schema import club_detail_schema_patch
+from schemas.club_schema import club_detail_schema_patch
 
 API_URL = "https://book-club.qa.guru/api/v1"
 CLUB_ID = 886

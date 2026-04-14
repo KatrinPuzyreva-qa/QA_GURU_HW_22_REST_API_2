@@ -1,18 +1,20 @@
 import requests
 from jsonschema import validate
-from Schemas.auth_schema import success_auth, wrong_credentials_auth, unsupported_media_type, \
+from schemas.auth_schema import success_auth, wrong_credentials_auth, unsupported_media_type, \
     error_password_required_schema_auth, error_username_required_schema_auth, error_username_and_password_required
-from Tests.Auth.conftest import wrong_body_type_data, USERNAME, PASSWORD, API_URL, TOKEN_PATH, valid_credentials
+from tests.auth.conftest import wrong_body_type_data, USERNAME, PASSWORD, API_URL, TOKEN_PATH, valid_credentials
 
 
 def test_successful_auth(valid_credentials):
     """Тест успешной авторизации."""
     response = requests.post(API_URL, json=valid_credentials)
 
-    print("\n--- УСПЕШНАЯ Авторизация ---")
-    print("Status code:", response.status_code)
-    print("Body:", response.text)
-
+    print(
+        f"--- УСПЕШНАЯ Авторизация ---\n"
+        f"\nStatus: {response.status_code}\n"
+        f"Headers: {response.headers}\n"
+        f"Body: {response.text}"
+    )
     assert response.status_code == 200
 
     body = response.json()
@@ -33,10 +35,11 @@ def test_wrong_credentials_auth(wrong_password_data):
     """Тест авторизации с неверным паролем."""
     response = requests.post(API_URL, json=wrong_password_data)
 
-    print("\n--- Авторизация с неверным паролем ---")
-    print("Status code:", response.status_code)
-    print("Body:", response.text)
-
+    print(
+        f"--- Авторизация с неверным паролем ---\n"
+        f"\nStatus: {response.status_code}\n"
+        f"Body: {response.text}"
+    )
     assert response.status_code == 401
 
     body = response.json()
@@ -48,10 +51,11 @@ def test_missing_password_auth(missing_password_data):
     """Тест авторизации с отсутствующим паролем."""
     response = requests.post(API_URL, json=missing_password_data)
 
-    print("\n--- Авторизация без пароля ---")
-    print("Status code:", response.status_code)
-    print("Body:", response.text)
-
+    print(
+        f"--- Авторизация без пароля ---\n"
+        f"\nStatus: {response.status_code}\n"
+        f"Body: {response.text}"
+    )
     assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
 
     body = response.json()
@@ -65,9 +69,11 @@ def test_wrong_content_type_auth(valid_credentials, png_headers):
     """Тест авторизации с неправильным заголовком Content-Type."""
     response = requests.post(API_URL, headers=png_headers, json=valid_credentials)
 
-    print("\nStatus code:", response.status_code)
-    print("Body:", response.text)
-
+    print(
+        f"--- Авторизация с неправильным заголовком Content-Type ---\n"
+        f"\nStatus: {response.status_code}\n"
+        f"Body: {response.text}"
+    )
     assert response.status_code == 415
 
     body = response.json()
@@ -80,10 +86,11 @@ def test_missing_username_auth(missing_username_data):
     """Тест авторизации с отсутствующим логином."""
     response = requests.post(API_URL, json=missing_username_data)
 
-    print("\n--- Авторизация без логина ---")
-    print("Status code:", response.status_code)
-    print("Body:", response.text)
-
+    print(
+        f"--- Авторизация без логина ---\n"
+        f"\nStatus: {response.status_code}\n"
+        f"Body: {response.text}"
+    )
     assert response.status_code == 400
 
     body = response.json()
@@ -100,10 +107,11 @@ def test_missing_username_and_password_auth(missing_both_data):
     """Тест авторизации с отсутствующими логином и паролем."""
     response = requests.post(API_URL, json=missing_both_data)
 
-    print("\n--- Авторизация без логина и пароля ---")
-    print("Status code:", response.status_code)
-    print("Body:", response.text)
-
+    print(
+        f"--- Авторизация без логина и пароля ---\n"
+        f"\nStatus: {response.status_code}\n"
+        f"Body: {response.text}"
+    )
     assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
 
     body = response.json()
@@ -128,9 +136,10 @@ def test_wrong_body_type(wrong_body_type_data):
     #Тест авторизации с некорректным типом тела запроса.API корректно обрабатывает None, True, числа, строки и списки.
     #Фикстура запустит тест 5 раз с разными значениями.
 
-    print(f"\n--- Авторизация с телом типа: {type(wrong_body_type_data).__name__} ---")
-    print("Отправляемое тело:", wrong_body_type_data)
-
+    print(
+        f"--- Авторизация с некорректным типом тела запроса ---\n"
+        f"\nОтправляемое тело: {wrong_body_type_data}\n"
+        )
     response = requests.post(API_URL, json=wrong_body_type_data)
 
     print("Status code:", response.status_code)

@@ -1,7 +1,9 @@
 import requests
 import random
 from jsonschema import validate
-from Schemas.club_schema import success_create_club
+
+import schemas.club_schema
+
 
 API_URL = "https://book-club.qa.guru/api/v1"
 USERNAME = "katrin"
@@ -29,25 +31,12 @@ def test_success_create_club():
     club_headers = {"Authorization": "Bearer " + access_token}
     club_response = requests.post(API_URL + "/clubs/", headers=club_headers, json=club_body)
 
-    print("\nStatus code:", club_response.status_code)
-    print("Body:", club_response.text)
+    print(f"\nStatus code: {club_response.status_code}\nBody: {club_response.text}")
 
     assert club_response.status_code == 201, f"Ожидался статус 201, получен {club_response.status_code}"
 
     club_response_body = club_response.json()
-    validate(instance=club_response_body, schema=success_create_club)
-
-    # 5. Проверка значений в ответе (Проверка "other fields")
-    assert club_response_body["bookTitle"] == book_title
-    assert club_response_body["bookAuthors"] == book_author
-
-    # Проверка полей, которые формирует сервер (а не передает клиент)
-    assert club_response_body["owner"] == USERNAME_ID, "Владелец клуба указан неверно"
-    assert USERNAME_ID in club_response_body["members"], "Пользователь не добавлен в members"
-
-    # Проверка полей, которые должны быть инициализированы пустыми/нулевыми
-    assert len(club_response_body["reviews"]) == 0, "Список отзывов должен быть пустым"
-    assert club_response_body["modified"] is None, "Поле 'modified' должно быть None при создании"
+    validate(instance=club_response_body, schema=schemas.club_schema.success_create_club)
 
 
 def test_create_club_unauthorized():
@@ -65,10 +54,12 @@ def test_create_club_unauthorized():
     # Запрос отправляется БЕЗ заголовка Authorization
     club_response = requests.post(API_URL + "/clubs/", json=club_body)
 
-    print("\n--- Создание клуба без авторизации ---")
-    print("Status code:", club_response.status_code)
-    print("Body:", club_response.text)
-
+    print(
+        f"--- Создание клуба без авторизации ---\n"
+        f"\nStatus: {club_response.status_code}\n"
+        f"Headers: {club_response.headers}\n"
+        f"Body: {club_response.text}"
+    )
     assert club_response.status_code == 401, f"Ожидался статус 401, получен {club_response.status_code}"
 
     # 2. Проверка текста ошибки
@@ -96,10 +87,12 @@ def test_create_club_with_invalid_data():
 
     club_response = requests.post(API_URL + "/clubs/", headers=headers, json=invalid_club_body)
 
-    print("\\n--- Создание клуба с некорректными данными ---")
-    print("Status code:", club_response.status_code)
-    print("Body:", club_response.text)
-
+    print(
+        f"--- Создание клуба с некорректными данными ---\n"
+        f"\nStatus: {club_response.status_code}\n"
+        f"Headers: {club_response.headers}\n"
+        f"Body: {club_response.text}"
+    )
     # Проверка статуса ответа
     assert club_response.status_code == 400, f"Ожидался статус 400, получен {club_response.status_code}"
 

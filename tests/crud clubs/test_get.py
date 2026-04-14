@@ -1,6 +1,6 @@
 import requests
 from jsonschema import validate
-from Schemas.club_schema import response_schema_get
+from schemas.club_schema import response_schema_get
 
 BASE_URL = "https://book-club.qa.guru/api/v1"
 

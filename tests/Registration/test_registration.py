@@ -1,7 +1,7 @@
 import requests
 import pytest
 from jsonschema import validate
-from Schemas.registration_schema import payload_schema, error_username_already_exists_schema, \
+from schemas.registration_schema import payload_schema, error_username_already_exists_schema, \
     error_password_validation_schema, error_password_required_schema, error_username_validation_schema, \
     error_username_required
 

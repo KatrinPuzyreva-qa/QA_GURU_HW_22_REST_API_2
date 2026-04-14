@@ -1,4 +1,4 @@
-from Schemas.registration_schema import error_password_required_schema
+from schemas.registration_schema import error_password_required_schema
 
 success_auth = {
   "$schema": "http://json-schema.org/draft-07/schema#",
