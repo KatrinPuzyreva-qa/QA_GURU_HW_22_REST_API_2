@@ -4,6 +4,14 @@ API_URL = "https://book-club.qa.guru/api/v1"
 USERNAME = "katrin"
 PASSWORD = "katrin1"
 TOKEN_PATH = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+CLUB_ID = 886
+PATCH_PAYLOAD = {
+    "bookTitle": "booking_info",
+    "bookAuthors": "booking_author",
+    "publicationYear": 2147483647,
+    "description": "description",
+    "telegramChatLink": "https://t.me/qa.guru"
+}
 
 @pytest.fixture
 def valid_credentials():

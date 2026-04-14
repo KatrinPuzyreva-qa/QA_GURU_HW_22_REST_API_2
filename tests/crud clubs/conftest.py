@@ -1,7 +1,7 @@
 import pytest
 import requests
 import random
-from tests.auth.conftest import USERNAME, PASSWORD, API_URL
+from tests.auth.conftest import USERNAME, PASSWORD, API_URL, CLUB_ID
 
 # Фикстура для получения access_token
 @pytest.fixture(scope="session")
@@ -25,6 +25,27 @@ def valid_club_body():
     }
 
 
+# 2. Фикстура для получения access_token
+@pytest.fixture
+def access_token():
+    """Фикстура для авторизации и получения Bearer токена."""
+    auth_body = {"username": "katrin", "password": "katrin1"}
+    auth_response = requests.post(f"{API_URL}/auth/token/", json=auth_body)
+
+    # Если авторизация не удалась, лучше упасть сразу, чем отдавать None
+    assert auth_response.status_code == 200, "Не удалось авторизоваться для теста"
+
+    return auth_response.json()["access"]
+
+
+# 3. Фикстура для заголовков (зависит от access_token)
+@pytest.fixture
+def auth_headers(access_token):
+    """Фикстура, возвращающая словарь заголовков с Authorization."""
+    return {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
 @pytest.fixture
 def valid_club_id():
     """
