@@ -52,7 +52,7 @@ def test_create_club_unauthorized():
     ], f"Неожиданное сообщение об ошибке: {body.get('detail')}"
 
 
-def test_create_club_with_invalid_data():
+def test_create_club_with_invalid_data(access_token):
     """Тест: Создание клуба с некорректными данными в payload."""
     auth_body = {"username": USERNAME, "password": PASSWORD}
     auth_response = requests.post(API_URL + "/auth/token/", json=auth_body)

@@ -56,13 +56,15 @@ def test_missing_password_auth(missing_password_data):
         f"\nStatus: {response.status_code}\n"
         f"Body: {response.text}"
     )
-    assert response.status_code == 400, f"Ожидался статус 400, получен {response.status_code}"
+    assert response.status_code == 400, \
+        f"Ожидался статус 400, получен {response.status_code}"
 
     body = response.json()
     validate(instance=body, schema=error_password_required_schema_auth)
 
     expected_error = "This field is required."
-    assert expected_error in body["password"], f"Ожидалась ошибка '{expected_error}', получена: {body['password']}"
+    assert expected_error in body["password"], \
+        f"Ожидалась ошибка '{expected_error}', получена: {body['password']}"
 
 
 def test_wrong_content_type_auth(valid_credentials, png_headers):
@@ -100,7 +102,8 @@ def test_missing_username_auth(missing_username_data):
     assert "username" in body, f"Ключ 'username' отсутствует в ответе: {body}"
 
     expected_error = "This field is required."
-    assert expected_error in body["username"], f"Ожидалась ошибка '{expected_error}', получена: {body['username']}"
+    assert expected_error in body["username"], \
+        f"Ожидалась ошибка '{expected_error}', получена: {body['username']}"
 
 
 def test_missing_username_and_password_auth(missing_both_data):

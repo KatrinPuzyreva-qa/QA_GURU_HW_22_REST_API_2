@@ -23,3 +23,24 @@ def valid_club_body():
         "description": "Valid description",
         "telegramChatLink": "https://t.me/valid_link"
     }
+
+
+@pytest.fixture
+def valid_club_id():
+    """
+    Фикстура, которая получает список клубов и возвращает ID первого найденного.
+    Если список пуст, тест, использующий эту фикстуру, будет помечен как xfail.
+    """
+    list_url = f"{API_URL}/clubs/"
+    list_response = requests.get(list_url)
+
+    # Проверяем, что сам эндпоинт списка работает
+    assert list_response.status_code == 200, "Не удалось получить доступ к списку клубов"
+
+    list_body = list_response.json()
+
+    # Проверяем наличие данных
+    if "results" in list_body and len(list_body["results"]) > 0:
+        return list_body["results"][0]["id"]
+    else:
+        pytest.xfail("Список клубов пуст. Невозможно выполнить тест, требующий валидный ID клуба.")
