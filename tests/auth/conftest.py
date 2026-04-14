@@ -1,6 +1,6 @@
 import pytest
 
-API_URL = "https://book-club.qa.guru/api/v1/auth/token/"
+API_URL = "https://book-club.qa.guru/api/v1"
 USERNAME = "katrin"
 PASSWORD = "katrin1"
 TOKEN_PATH = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"

@@ -3,39 +3,21 @@ import random
 from jsonschema import validate
 
 import schemas.club_schema
+from tests.auth.conftest import USERNAME, PASSWORD, API_URL
 
 
-API_URL = "https://book-club.qa.guru/api/v1"
-USERNAME = "katrin"
-PASSWORD = "katrin1"
-TOKEN_PATH = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-USERNAME_ID = 1772
+def test_success_create_club(access_token, valid_club_body):
+    """Тест: Успешное создание клуба."""
+    headers = {"Authorization": f"Bearer {access_token}"}
 
-
-def test_success_create_club():
-    auth_body = {"username": USERNAME, "password": PASSWORD}
-    auth_response = requests.post(API_URL + "/auth/token/", json=auth_body)
-    access_token = auth_response.json()["access"]
-
-    book_title = f"Some another book {random.randint(1000, 999999)}"
-    book_author = f"Some author"
-    club_body = {
-        "bookTitle": book_title,
-        "bookAuthors": book_author,
-        "publicationYear": 2147483647,
-        "description": "Some descr",
-        "telegramChatLink": "https://t.me/qa.guru"
-    }
-
-    # Создание клуба
-    club_headers = {"Authorization": "Bearer " + access_token}
-    club_response = requests.post(API_URL + "/clubs/", headers=club_headers, json=club_body)
+    club_response = requests.post(API_URL + "/clubs/", headers=headers, json=valid_club_body)
 
     print(f"\nStatus code: {club_response.status_code}\nBody: {club_response.text}")
 
-    assert club_response.status_code == 201, f"Ожидался статус 201, получен {club_response.status_code}"
+    assert club_response.status_code == 201
 
     club_response_body = club_response.json()
+    # Валидация схемы остается здесь, так как она специфична для этого теста
     validate(instance=club_response_body, schema=schemas.club_schema.success_create_club)
 
 
