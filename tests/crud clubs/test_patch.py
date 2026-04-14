@@ -15,7 +15,9 @@ def test_patch_club_success(auth_headers):
     # Используем готовые заголовки и payload
     response = requests.patch(url, headers=auth_headers, json=PATCH_PAYLOAD)
 
-    print(f"--- PATCH Успешное обновление ---\nStatus code: {response.status_code}\nBody: {response.text}\n")
+    print(f"--- PATCH Успешное обновление ---\n"
+          f"Status code: {response.status_code}\n"
+          f"Body: {response.text}\n")
 
     # Проверка статуса
     assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
@@ -34,9 +36,12 @@ def test_patch_club_empty_body(auth_headers):
     # Используем готовые заголовки, но отправляем пустое тело {}
     response = requests.patch(url, headers=auth_headers, json={})
 
-    print(f"--- PATCH Пустое тело запроса ---\nStatus code: {response.status_code}\nBody: {response.text}\n")
+    print(f"--- PATCH Пустое тело запроса ---\n"
+          f"Status code: {response.status_code}\n"
+          f"Body: {response.text}\n")
 
-    assert response.status_code == 200, f"Ожидался статус 200, получен {response.status_code}"
+    assert response.status_code == 200, \
+        f"Ожидался статус 200, получен {response.status_code}"
 
     body = response.json()
     validate(instance=body, schema=club_detail_schema_patch)

@@ -1,8 +1,7 @@
 import requests
 import random
-from jsonschema import validate
-
 import schemas.club_schema
+from jsonschema import validate
 from tests.auth.conftest import USERNAME, PASSWORD, API_URL
 
 
